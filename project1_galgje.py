@@ -35,6 +35,7 @@ spaties=['']
 spatie=''
 bestaat=False
 bezig_andere_muziek=False
+gemiddelde_tijd_opstarten=3
 
 #alles voor pygame: door de supplementaire code komen er geen nutteloze woorden in de uitvoer. 
 #Er zou pygame ce geprint worden.
@@ -100,12 +101,12 @@ thread_download_woorden=Thread(target=download_w, daemon=True)
 klaar=False
 #sleep(4)
 def aftellen():
-    global root_opstarten, aftellen_label, tijd, tijdverschil
+    global root_opstarten, aftellen_label, tijd, tijdverschil,gemiddelde_tijd_opstarten
     tijd_wachten=0.5
     while not klaar_s_w or not klaar_w:
         try:
             tijdverschil=subtract(time(),tijd)
-            tijd_tot_opgestart=round(subtract(6,tijdverschil))
+            tijd_tot_opgestart=round(subtract(gemiddelde_tijd_opstarten,tijdverschil))
             
             if tijd_tot_opgestart<0:
                 aftellen_label.config(text="Het gaat niet helemaal zoals gepland, een onverwachte vertraging deed zich voor, het opstarten kan nog iets langer duren.")
@@ -553,6 +554,7 @@ def herstart():
                 print(b,end="")
                 sleep(0.025)
             sleep(0.15)
+            print("\n")
         eerste_print=False
     else:#print sneller als de instructies al gelezen konden worden bij de start van het programma.
         for i in algemene_info_verzameling:
@@ -560,7 +562,8 @@ def herstart():
                 print(b,end="")
                 sleep(0.001)
             sleep(0.01)
-    
+            print("\n")
+
     print("\n\n")#laat lijn open
     print(":", end="")
     for i in range(len(woord)):
