@@ -1,1 +1,1 @@
-# galgje-project 1
+# hangman-galgje
