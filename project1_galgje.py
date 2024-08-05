@@ -197,7 +197,7 @@ def label_aanpassen():
 
 thread_labels=Thread(target=label_aanpassen, daemon=True)
 def even_geduld():
-    global win,vooruitgang_label, opstarten_label, root_opstarten, lettertype, klaar_s_w, klaar_w, tijd, aftellen_label,hoek,hoek_start,cirkels,cirkels_hoeken, root_opstarten, straal_cirkel,canvas
+    global win,vooruitgang_label, opstarten_label, root_opstarten, lettertype, klaar_s_w, klaar_w, tijd, aftellen_label, root_opstarten
     tijd=time()
     lettertype=("new times roman",20)
     
@@ -215,7 +215,6 @@ def even_geduld():
     aftellen_label.place(relx=0.2,rely=0.6)
     vooruitgang_label=Label(root_opstarten,text="vooruitgang: de Nederlandse woorden zijn aan het laden", font=("new times roman",13),fg="white",bg="dark blue",wraplength=300)
     vooruitgang_label.place(relx=0.7,rely=0.8)
-    
     
     thread_labels.start()
     
@@ -243,7 +242,7 @@ def kies_woord():
     if print_woord:
         print(woord)
     for i in range(4):
-        print("")
+        print("\n")
     if eerste_print:
         print("eerste spel:")
     else:
@@ -254,7 +253,6 @@ def kies_woord():
 
 def declareer_muziek_normaal():
     global  sound, sound2,sound3,sound4,sound5
-    
     
     pad_muziek_normaal=r".\muziek voor galgje\normale_muziek.mp3"
     sound = pygame.mixer.Sound(pad_muziek_normaal)
@@ -323,7 +321,6 @@ async def speel_muziek_normaal():
             await a.sleep(10)
             
             
-        
 def importeer():
     global win,volledige_lijst_woorden, klaar, thread_geduld, klaar_s_w, klaar_w, thread_download_stopwoorden, thread_download_woorden, nederlandse_woorden, aantal_verloren
     thread_geduld.start()
@@ -331,13 +328,8 @@ def importeer():
     thread_download_stopwoorden.start()
     thread_download_woorden.start()
     
-    
-    
     tijd_voor_laden=time()
     aantal_verloren=0
-    
-    
-
 
     while  volledige_lijst_woorden=={}:
         
@@ -452,7 +444,6 @@ while spatie_toegelaten=='niet toegelaten':#zolang de variabele nog niet gedefin
             spatie_toegelaten=True
         elif antwoord.strip().lower() in antwoorden_nee or antwoord=="":
             spatie_toegelaten=False
-            
         else:
             print("Wat bedoel je? Antwoord met ja of nee.")
 if not spatie_toegelaten:
@@ -468,9 +459,7 @@ def maxlengte_wijzigen():
     tekst_maximumlengte="Waarschuwing: De langste woorden bevatten MEER DAN 30 karakters."
     tekst2_maximumlengte="Herhaling: de langste woorden bevatten MEER DAN 30 karakters, dit zijn bijgevolg ook moeilijke woorden."
    
-    
-                
-    for i in tekst_maximumlengte,tekst2_maximumlengte:
+    for i in tekst_maximumlengte,tekst2_maximumlengte:#print geleidelijk aan
         for c in i:
             print(c,end="")
             sleep(0.005)
@@ -495,14 +484,12 @@ def maxlengte_wijzigen():
             print("string of float ingegeven, geef een integer")
     print("De maximumlengte werd ingesteld op",maxlengte)
     print("\n")#nieuwe lijn
+
 def herstart():
     global geluid_opstarten,eerste_run,woord,huidig_deel, stadium, invoer,einde, gemeenschappelijke_karakters, gem_lijst, lijst, geraden_deel, lijst, eerste_start, verder, gewonnen, eerste_print, lijst_al_getekend
     
     from time import sleep
-    
-    
 
-    
     #turtle blijft op dezelfde plaats, voor het tekenen gaat hij steeds naar het midden (-100,0)
     if eerste_start==True:
         pensize(3)
@@ -515,9 +502,9 @@ def herstart():
             print("Dit was het woord dat je moest raden:",woord)
             
         for i in range(5):
-            print(" ")#laat 5 lijnen open voor nieuw spel
+            print("\n")#laat 5 lijnen open voor nieuw spel
+    
     if eerste_run:
-        
         thread_muziek_normaal=Thread(target=start_speel_muziek_normaal,daemon=True)
         thread_muziek_normaal.start()#start met normale muziek te spelen!!
         sleep(0.7)#overgang
@@ -558,7 +545,7 @@ def herstart():
     lijn16="Zowel bij winst als bij verlies wordt er een liedje afgespeeld."
     lijn17="Sommige woorden zijn overigens afkomstig uit Nederland of worden hoofdzakelijk gebruikt in Nederland."
     lijn18="De woorden kunnen vervoegingen van werkwoorden bevatten."
-    algemene_info_verzameling=lijn1,lijn2,"  ",lijn3,lijn4,lijn5,"  ",lijn6,lijn7,"  ", lijn8,lijn9, lijn10, lijn11, lijn12,"  ", lijn13, lijn14,lijn15, lijn16,"  ", lijn17, lijn18
+    algemene_info_verzameling=lijn1,extra_tussen_lijn1_lijn2,lijn2,"  ",lijn3,lijn4,lijn5,"  ",lijn6,lijn7,"  ", lijn8,lijn9, lijn10, lijn11, lijn12,"  ", lijn13, lijn14,lijn15, lijn16,"  ", lijn17, lijn18
     if eerste_print:
         from time import sleep #Normaal wordt er aan het begin geimporteerd, maar dit spaart tijd.
         for i in algemene_info_verzameling:
