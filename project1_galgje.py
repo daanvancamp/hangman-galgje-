@@ -9,6 +9,8 @@ from tkinter import Tk
 import nltk; from nltk.corpus import stopwords
 from time import sleep, time;from numpy import subtract;from random import randint
 from turtle import*
+from opstart_functies import *
+import sys
 #print("na import")
 antwoorden_nee=frozenset(["neen","Neen.","Nee.","Neen","nee","Nee"])
 antwoorden_ja=frozenset(["Ja","ja","Ja.","zeker","Zeker","Zeker."])
@@ -37,45 +39,22 @@ bestaat=False
 bezig_andere_muziek=False
 gemiddelde_tijd_opstarten=3
 
-#alles voor pygame: door de supplementaire code komen er geen nutteloze woorden in de uitvoer. 
-#Er zou pygame ce geprint worden.
-import os
-import sys
-
-    
-stderr = sys.stderr
-stdout = sys.stdout
-
-sys.stderr = open(os.devnull, 'w')
-sys.stdout = open(os.devnull, 'w')
-
-    
+from threading import Thread
+import nltk
+from nltk.corpus import stopwords
 import pygame
-
-sys.stderr = stderr
-sys.stdout = stdout
-    
 pygame.mixer.init()
-
-
-for i in range(20):
-    spatie+=' '
-    spaties.append(spatie)
-
-verboden_karakters = ["^",'|', '<', '>',"&",",","#","_",";"]
 
 def speel_muziek_opstarten():
     global geluid_opstarten
     pad_muziek_opstarten=r".\muziek voor galgje\opstarten_muziek.mp3"
     geluid_opstarten = pygame.mixer.Sound(pad_muziek_opstarten)
     geluid_opstarten.play(-1,fade_ms=2000)#fade in=2s
-Thread(target=speel_muziek_opstarten,daemon=True).start()
-
 def laden_stopwoorden():
     global nederlandse_stopwoorden, klaar_s_w
     nederlandse_stopwoorden = frozenset(stopwords.words('dutch'))     
     klaar_s_w=True
-    
+
 def laden_woorden():
     global nederlandse_woorden, klaar_w
     from list_words import nederlandse_woorden
@@ -87,9 +66,21 @@ def download_w():
 def download_s_w():
     nltk.download('stopwords',quiet=True)
     Thread(target=laden_stopwoorden, daemon=True).start()
+
+
+
+for i in range(20):
+    spatie+=' '
+    spaties.append(spatie)
+
+verboden_karakters = ["^",'|', '<', '>',"&",",","#","_",";"]
+
+
+Thread(target=speel_muziek_opstarten,daemon=True).start()
+
     
 klaar=False
-#sleep(4)
+
 def aftellen():
     global root_opstarten, aftellen_label, tijd, tijdverschil,gemiddelde_tijd_opstarten
     tijd_wachten=0.5
@@ -141,6 +132,8 @@ def aftellen():
             root_opstarten.destroy()#Dit mag meerdere keren worden uitgevoerd.
          except:
             print("De GUI werd gesloten, dit is normaal. Indien er problemen waren, zijn ze nu opgelost.")
+
+
 def label_aanpassen():
     global opstarten_label, klaar_s_w,klaar_w, aftellen_label, tijd, tijdverschil, vooruitgang_label
     tijd_tussen_veranderen=0.4
@@ -183,7 +176,6 @@ def label_aanpassen():
         except:
             print("De GUI werd gesloten, dit is normaal.")
         
-
 
 def even_geduld():
     global win,vooruitgang_label, opstarten_label, root_opstarten, lettertype, klaar_s_w, klaar_w, tijd, aftellen_label, root_opstarten
@@ -237,19 +229,7 @@ def kies_woord():
         print("volgende spel:")
     print("\nHet woord dat je moet raden is",len(woord),"karakters lang.\n")
 
-def declareer_muziek_normaal():
-    global  sound, sound2,sound3,sound4,sound5
     
-    pad_muziek_normaal=r".\muziek voor galgje\normale_muziek.mp3"
-    sound = pygame.mixer.Sound(pad_muziek_normaal)
-    pad_muziek_normaal2=r".\muziek voor galgje\normale_muziek2.mp3"
-    sound2 = pygame.mixer.Sound(pad_muziek_normaal2)
-    pad_muziek_normaal3=r".\muziek voor galgje\normale_muziek3.mp3"
-    sound3 = pygame.mixer.Sound(pad_muziek_normaal3)
-    pad_muziek_normaal4=r".\muziek voor galgje\normale_muziek4.mp3"
-    sound4 = pygame.mixer.Sound(pad_muziek_normaal4)
-    pad_muziek_normaal5=r".\muziek voor galgje\normale_muziek5.mp3"
-    sound5 = pygame.mixer.Sound(pad_muziek_normaal5)
 
 def start_speel_muziek_normaal():
     a.run(speel_muziek_normaal())
@@ -298,7 +278,6 @@ async def speel_muziek_normaal():
                     
             except Exception as e:
                 print("in except",e)
-                declareer_muziek_normaal()#voornamelijk voor de eerste keer bedoeld.
                 await a.sleep(4)
                 continue
         else:
@@ -310,7 +289,6 @@ def importeer():
     Thread(target=even_geduld, daemon=True).start()
     Thread(target=download_s_w, daemon=True).start()
     Thread(target=download_w, daemon=True).start()
-    declareer_muziek_normaal()
     
     tijd_voor_laden=time()
     aantal_verloren=0
