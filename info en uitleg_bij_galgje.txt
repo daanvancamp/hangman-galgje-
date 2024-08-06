@@ -1,0 +1,27 @@
+Hier en daar zijn er nog tests of debugging lijnen te vinden die nu niets meer doen.
+Er wordt vaak print("") gebruikt, dit om alineas te vormen.
+Er zijn ook nog regels die eigenlijk bedoeld zijn om uit te breiden, maar die nu in feite optioneel zijn.
+
+Verander de waarde van de variabele print_woord naar True om te testen! Op die manier kan je het woord dat je moet raden zien.
+
+Het programma lijkt heel traag bij iedere fout die gemaakt wordt, het is de bedoeling om naar de turtle te kijken ondertussen. Daarom staat die snelheid niet hoog.
+Belangrijk!!:
+	1.Alle bestanden moeten gedownload worden en op de juiste locatie gezet worden. (Verander de namen van de bestanden niet. (Dit zorgt voor extra werk bij de volgende stappen.))
+	2.De paden in het hele programma moeten veranderd worden. Tip: Zoek naar alle variabelen die met pad beginnen. (ctrl+f) 
+	3.Zonder dit te doen, zal het programma crashen.
+Als je het programma vaak laat herhalen zal het crashen. In hoofdprogramma wordt hoofdprogramma opgeroepen, in opnieuw_spelen wordt hoofdprogramma opgeroepen,...
+Te veel data om op te slaan, geheugenprobleem.
+
+Het is mogelijk dat het programma hapert(meerdere threads(tot 4)), ik heb het enkel op mijn laptop getest.
+verklarende uitleg i.v.m. enkele functies:
+	a.run: ongeveer gelijk aan een thread (proces dat gelijktijdig plaatsvindt). Doordat het programma niet blokkeert bij asyncio.sleep en wel bij sleep() geeft dit betere prestaties.
+	asyncio.sleep kan enkel in een async functie gebruikt worden en zo'n functie moet gestart worden door asyncio.run.
+	thread: een proces dat volledig los staat van het hoofdprogramma en een nieuw 'spoor' opstart.
+	daemon=True wilt zeggen dat de thread eindigd wanneer het hoofdprogramma eindigt. False is het omgekeerde.
+	frozenset: onveranderbare set(betere prestaties)
+	sys.exit: beëindig hoofdprogramma
+
+
+
+
+Muziek werd gemaakt met suno ai.

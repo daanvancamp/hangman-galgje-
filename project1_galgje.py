@@ -69,8 +69,7 @@ def speel_muziek_opstarten():
     pad_muziek_opstarten=r".\muziek voor galgje\opstarten_muziek.mp3"
     geluid_opstarten = pygame.mixer.Sound(pad_muziek_opstarten)
     geluid_opstarten.play(-1,fade_ms=2000)#fade in=2s
-thread_muziek_opstarten=Thread(target=speel_muziek_opstarten,daemon=True)
-thread_muziek_opstarten.start()
+Thread(target=speel_muziek_opstarten,daemon=True).start()
 
 def laden_stopwoorden():
     global nederlandse_stopwoorden, klaar_s_w
@@ -82,21 +81,12 @@ def laden_woorden():
     from list_words import nederlandse_woorden
     klaar_w=True
 
-thread_stopwoorden=Thread(target=laden_stopwoorden, daemon=True)
-thread_woorden=Thread(target=laden_woorden, daemon=True)
-
 def download_w():
-    global thread_woorden
-    
-    thread_woorden.start()
+    Thread(target=laden_woorden, daemon=True).start()
 
 def download_s_w():
-    global thread_stopwoorden
     nltk.download('stopwords',quiet=True)
-    thread_stopwoorden.start()
-    
-thread_download_stopwoorden=Thread(target=download_s_w, daemon=True)
-thread_download_woorden=Thread(target=download_w, daemon=True)
+    Thread(target=laden_stopwoorden, daemon=True).start()
     
 klaar=False
 #sleep(4)
@@ -154,8 +144,7 @@ def aftellen():
 def label_aanpassen():
     global opstarten_label, klaar_s_w,klaar_w, aftellen_label, tijd, tijdverschil, vooruitgang_label
     tijd_tussen_veranderen=0.4
-    thread_aftellen=Thread(target=aftellen,daemon=True)
-    thread_aftellen.start()
+    Thread(target=aftellen,daemon=True).start()
     getoond_klaar_s_w=False
     getoond_klaar_w=False
     sleep(1)
@@ -196,7 +185,6 @@ def label_aanpassen():
         
 
 
-thread_labels=Thread(target=label_aanpassen, daemon=True)
 def even_geduld():
     global win,vooruitgang_label, opstarten_label, root_opstarten, lettertype, klaar_s_w, klaar_w, tijd, aftellen_label, root_opstarten
     tijd=time()
@@ -217,12 +205,11 @@ def even_geduld():
     vooruitgang_label=Label(root_opstarten,text="vooruitgang: de Nederlandse woorden zijn aan het laden", font=("new times roman",13),fg="white",bg="dark blue",wraplength=300)
     vooruitgang_label.place(relx=0.7,rely=0.8)
     
-    thread_labels.start()
+    Thread(target=label_aanpassen, daemon=True).start()
     
     root_opstarten.mainloop()
          
     
-thread_geduld=Thread(target=even_geduld, daemon=True)
 def kies_woord():
     global woord, volledige_lijst_woorden, maxlengte, spatie_toegelaten, verboden_karakters, print_woord
     woord=''
@@ -248,9 +235,7 @@ def kies_woord():
         print("eerste spel:")
     else:
         print("volgende spel:")
-    print("\n")
-    print("Het woord dat je moet raden is",len(woord),"karakters lang.")
-    print("\n")
+    print("\nHet woord dat je moet raden is",len(woord),"karakters lang.\n")
 
 def declareer_muziek_normaal():
     global  sound, sound2,sound3,sound4,sound5
@@ -265,7 +250,6 @@ def declareer_muziek_normaal():
     sound4 = pygame.mixer.Sound(pad_muziek_normaal4)
     pad_muziek_normaal5=r".\muziek voor galgje\normale_muziek5.mp3"
     sound5 = pygame.mixer.Sound(pad_muziek_normaal5)
-    
 
 def start_speel_muziek_normaal():
     a.run(speel_muziek_normaal())
@@ -274,7 +258,6 @@ def start_speel_muziek_normaal():
 async def speel_muziek_normaal():
     global sound, sound2,sound3,sound4,sound5
     
-    #deze functie staat in feite in een while-lus.
     while True:
         
         willekeurig_getal=randint(1,5)
@@ -323,17 +306,16 @@ async def speel_muziek_normaal():
             
             
 def importeer():
-    global win,volledige_lijst_woorden, klaar, thread_geduld, klaar_s_w, klaar_w, thread_download_stopwoorden, thread_download_woorden, nederlandse_woorden, aantal_verloren
-    thread_geduld.start()
+    global volledige_lijst_woorden, klaar, klaar_s_w, klaar_w, nederlandse_woorden, aantal_verloren,nederlandse_stopwoorden
+    Thread(target=even_geduld, daemon=True).start()
+    Thread(target=download_s_w, daemon=True).start()
+    Thread(target=download_w, daemon=True).start()
     declareer_muziek_normaal()
-    thread_download_stopwoorden.start()
-    thread_download_woorden.start()
     
     tijd_voor_laden=time()
     aantal_verloren=0
 
     while  volledige_lijst_woorden=={}:
-        
         if klaar_s_w and klaar_w:
             
             volledige_lijst_woorden = set(nederlandse_stopwoorden|nederlandse_woorden)
@@ -343,9 +325,8 @@ def importeer():
     tijd_na_laden=subtract(time(),tijd_voor_laden)
     #print(tijd_na_laden)
 
-thread_import=Thread(target=importeer, daemon=True)
+Thread(target=importeer, daemon=True).start()
 
-thread_import.start()
 maxlengte=0
 while maxlengte==0:#De keer waarin de maximumlengte en de rest worden ingesteld is de laatste run van de loop.
     if klaar==True:
@@ -506,8 +487,7 @@ def herstart():
             print("\n")#laat 5 lijnen open voor nieuw spel
     
     if eerste_run:
-        thread_muziek_normaal=Thread(target=start_speel_muziek_normaal,daemon=True)
-        thread_muziek_normaal.start()#start met normale muziek te spelen!!
+        Thread(target=start_speel_muziek_normaal,daemon=True).start()
         sleep(0.7)#overgang
         geluid_opstarten.stop()
         eerste_run=False
@@ -630,8 +610,7 @@ def speel_muziek_verloren():
     from playsound import playsound
     pad=r".\muziek voor galgje\verloren_muziek.mp3"
     duurtijd=60+43
-    thread_pauzeer_muziek=Thread(target=pauzeer_normale_muziek,args=(duurtijd,))
-    thread_pauzeer_muziek.start()    
+    Thread(target=pauzeer_normale_muziek,args=(duurtijd,)).start()
     playsound(pad,)
     
 def speel_muziek_gewonnen():
@@ -644,14 +623,12 @@ def speel_muziek_gewonnen():
     willekeurig_getal2=randint(1,2)
     if willekeurig_getal2==1:
         duurtijd=60+47
-        thread_pauzeer_muziek=Thread(target=pauzeer_normale_muziek,args=(duurtijd,))
-        thread_pauzeer_muziek.start()
+        Thread(target=pauzeer_normale_muziek,args=(duurtijd,)).start()
         playsound(pad,)
         
     elif willekeurig_getal2==2:
         duurtijd=60+26
-        thread_pauzeer_muziek=Thread(target=pauzeer_normale_muziek,args=(duurtijd,))
-        thread_pauzeer_muziek.start()
+        Thread(target=pauzeer_normale_muziek,args=(duurtijd,)).start()
         playsound(pad2,)
         
 def root_verloren_verberg():
@@ -668,10 +645,10 @@ verloren = True  # Globale variabele om de staat van het venster bij te houden
 from tkinter import Label, Tk, PhotoImage
 
 def toon_scherm_verloren():
-    global verloren, root_verloren, bestaat, thread_muziek_verloren
+    global verloren, root_verloren, bestaat
     
-    thread_muziek_verloren=Thread(target=speel_muziek_verloren,daemon=True)#een thread stoppen is moeilijk.
-    thread_muziek_verloren.start()
+    Thread(target=speel_muziek_verloren,daemon=True).start()
+
     lettertype_verloren = ("new times roman", 40)
     
     if verloren:
@@ -709,10 +686,6 @@ def toon_scherm_verloren():
             root_verloren.mainloop()
         except:
             pass
-    
-
-        
-        
         
         
 def verhoog_snelheid_bij_herhaling(lijst_al_getekend:list,stadium:float,aantal_kansen:int,stadium_te_tekenen:float):
@@ -865,7 +838,7 @@ def teken():
         verloren=True
         try:
             thread_verloren.start()
-            sleep(9)
+            sleep(8)
             thread_verloren.stop()
             #print("thread gestart")
             thread_verloren.join()
@@ -875,12 +848,11 @@ def teken():
             aantal_verloren+=1
     
 def opnieuw_spelen():
-    global gewonnen, ja_nee, antwoorden_ja,antwoorden_nee, thread_muziek_gewonnen
+    global gewonnen, ja_nee, antwoorden_ja,antwoorden_nee
     
     if gewonnen==True:
         print("Op naar de volgende prijs!")
-        thread_muziek_gewonnen=Thread(target=speel_muziek_gewonnen,daemon=True)#een thread stoppen is lastig
-        thread_muziek_gewonnen.start()
+        Thread(target=speel_muziek_gewonnen,daemon=True).start()
         gewonnen=False
     elif gewonnen==False and einde!=True:
         print("Niet getreurd, je zal nog kansen krijgen.")
@@ -904,12 +876,11 @@ def opnieuw_spelen():
                 ja_nee=""
     
 def opnieuw_spelen_aangepast():
-    global gewonnen, ja_nee, antwoorden_ja,antwoorden_nee, thread_muziek_gewonnen
+    global gewonnen, ja_nee, antwoorden_ja,antwoorden_nee
     
     if gewonnen==True:
         print("Op naar de volgende prijs!")
-        thread_muziek_gewonnen=Thread(target=speel_muziek_gewonnen,daemon=True)#een thread stoppen is lastig
-        thread_muziek_gewonnen.start()
+        Thread(target=speel_muziek_gewonnen,daemon=True).start()
         gewonnen=False
     elif gewonnen==False and einde!=True:
         print("Niet getreurd, je zal nog kansen krijgen.")

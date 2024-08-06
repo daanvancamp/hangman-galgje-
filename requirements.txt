@@ -1,1 +1,4 @@
 playsound
+nltk
+numpy
+pygame
