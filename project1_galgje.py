@@ -478,7 +478,7 @@ def herstart():
         pencolor("green")
         eerste_start=False
     else:
-        clear()#verwijder de tekening van de galg. turtle.reset is het in feite, aleen wordt de plaats en oriëntatie niet veranderd
+        clear()#verwijder de tekening van de galg. turtle.reset is het in feite, aleen wordt de plaats en oriï¿½ntatie niet veranderd
         
         if gewonnen==False:
             print("Dit was het woord dat je moest raden:",woord)
