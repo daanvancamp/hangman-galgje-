@@ -2,3 +2,4 @@ playsound
 nltk
 numpy
 pygame
+inputimeout
