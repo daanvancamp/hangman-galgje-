@@ -305,8 +305,8 @@ def importeer():
 
 Thread(target=importeer, daemon=True).start()
 
-maxlengte=0
-while maxlengte==0:#De keer waarin de maximumlengte en de rest worden ingesteld is de laatste run van de loop.
+maxlengte=None
+while maxlengte is None:#De keer waarin de maximumlengte en de rest worden ingesteld is de laatste run van de loop.
     if klaar==True:
             from time import sleep
             print("bijna klaar...")
@@ -329,8 +329,8 @@ while maxlengte==0:#De keer waarin de maximumlengte en de rest worden ingesteld 
                         sleep(0.005)
                     print("\n")
                     sleep(0.07)
-            maxlengte=0
-            while maxlengte==0:#zolang niet gedefinieerd
+            maxlengte=None
+            while maxlengte is None:#zolang niet gedefinieerd
                 print("Druk op enter om de limiet in te stellen op 50 karakters.")
                 maxlengte=input("Geef de maximum lengte van de woorden of woordgroepen die je wilt raden in.    ")
                 if maxlengte=="":
@@ -341,9 +341,7 @@ while maxlengte==0:#De keer waarin de maximumlengte en de rest worden ingesteld 
                     print("De limiet moet groter zijn dan 0.")
                 try:
                     maxlengte=int(maxlengte)
-                    break #versnel een beetje
                 except:
-                    maxlengte=0
                     print("string of float ingegeven, geef een integer")
             print("\n")#nieuwe lijn
             
@@ -426,8 +424,8 @@ def maxlengte_wijzigen():
         print("\n")
         sleep(0.02)
     
-    maxlengte=0
-    while maxlengte==0:#zolang niet gedefinieerd
+    maxlengte=None
+    while maxlengte is None:#zolang niet gedefinieerd
         print("Druk op enter om de limiet in te stellen op 50 karakters.")
         maxlengte=input("Geef de maximum lengte van de woorden of woordgroepen die je wilt raden in.    ")
         if maxlengte=="":
@@ -440,7 +438,6 @@ def maxlengte_wijzigen():
             maxlengte=int(maxlengte)
             break #versnel een beetje
         except:
-            maxlengte=0
             print("string of float ingegeven, geef een integer")
     print("De maximumlengte werd ingesteld op",maxlengte)
     print("\n")#nieuwe lijn
@@ -872,36 +869,32 @@ def lees_karakter():
     verder=False
     invoer=""
     while len(str(invoer))!=1 or verder==True:
-        try:
-            invoer=input("geef een karakter in dat je wilt uitproberen   ").strip()
-        except:
-            invoer=""
-            pass
+        invoer=input("geef een karakter in dat je wilt uitproberen   ").strip()
+
         if not invoer.startswith(":"):
-            
-            if invoer.strip().lower()=="stop":
-                 einde=True
+            match invoer.strip().lower():
+                case "stop":
+                     einde=True
                  
-                 from inputimeout import inputimeout, TimeoutOccurred
-                 print("  ")
-                 try:
-                    invoer_afsluiten = inputimeout(prompt='Druk op een willekeurige toets binnen de 5 seconden als je toch wilt herstarten  ', timeout=5)
-                    opnieuw_spelen_aangepast()
-                 except TimeoutOccurred:
-                    print('Ik sluit af, je gaf niets in.')
-                 print("Ik sta steeds paraat als je nog eens wilt spelen!")
-                 print("Tot een volgende keer!")
-                 sys.exit()#sluit af
-            elif invoer.strip().lower()=="herstart":
-                 hoofdprogramma()
-                 continue#normaal kom je hier nooit.
-            elif invoer.strip().lower()=="maxlengte":
-                print("Je verzoek werd aangenomen.")
-                maxlengte_wijzigen()
-                lees_karakter()
+                     from inputimeout import inputimeout, TimeoutOccurred
+                     print("  ")
+                     try:
+                        invoer_afsluiten = inputimeout(prompt='Druk op een willekeurige toets binnen de 5 seconden als je toch wilt herstarten  ', timeout=5)
+                        opnieuw_spelen_aangepast()
+                     except TimeoutOccurred:
+                        print('Ik sluit af, je gaf niets in.')
+                     print("Ik sta steeds paraat als je nog eens wilt spelen!")
+                     print("Tot een volgende keer!")
+                     sys.exit()#sluit af
+                case "herstart":
+                     hoofdprogramma()
+                     continue#normaal kom je hier nooit.
+                case "maxlengte":
+                    print("Je verzoek werd correct aangenomen.")
+                    maxlengte_wijzigen()
+                    lees_karakter()
                 
             try:
-            
                 invoer=float(invoer)
                 invoer=int(invoer)
                 print("type float,int")
@@ -909,7 +902,7 @@ def lees_karakter():
                 verder=True
             except:
             
-                if len(invoer.strip())>1 and not invoer.startswith(":"):
+                if len(invoer.strip())>1:
                     if len(invoer)>10:
                         print("De ingevoerde string is veel te lang, die is namelijk",len(invoer),"karakters lang")
                     else:
@@ -936,6 +929,7 @@ def lees_karakter():
                             if f==c:
                                 print("Dit karakter behoort tot de verboden karakters en kan dus niet voorkomen in het woord")
                 invoer=invoer.strip().lower()
+            
             if invoer in lijst:
                 print("je hebt dit karakter al geprobeerd")
                 print("Deze letters heb je al geprobeerd.",lijst)
@@ -965,12 +959,12 @@ def lees_karakter():
                 float(invoer)# alternatieve manier om datatype te controleren
                 int(invoer)
             except:
-             lijst.append(invoer.strip().lower())#enkel wanneer er een string wordt ingegeven, wordt dit uitgevoerd.         
+                lijst.append(invoer.strip().lower())#enkel wanneer er een string wordt ingegeven, wordt dit uitgevoerd.         
     
         
 def print_aantal_resterende_pogingen():
     global aantal_kansen, term_stadium_vermeerderen, stadium,aantal_resterende_pogingen
-    aantal_resterende_pogingen=round((8-stadium)*(aantal_kansen/8))
+    aantal_resterende_pogingen = round((8-stadium)*(aantal_kansen/8))
     if aantal_resterende_pogingen>0:
         print("Bijgevolg resten je nog",str(aantal_resterende_pogingen),"poging(en)")
         
