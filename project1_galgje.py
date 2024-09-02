@@ -9,7 +9,6 @@ from tkinter import Tk
 import nltk; from nltk.corpus import stopwords
 from time import sleep, time;from numpy import subtract;from random import randint
 from turtle import*
-from opstart_functies import *
 import sys
 #print("na import")
 antwoorden_nee=frozenset(["neen","Neen.","Nee.","Neen","nee","Nee"])
@@ -917,12 +916,11 @@ def lees_karakter():
                         sleep(0.15)
                         print("\n")#ga naar volgende lijn
                 elif invoer in spaties and spatie_toegelaten==False:
-                    if invoer!="":
-                        print("Geef invoer.")
-                    elif invoer=="":
-                        print("Geef iets in!")
-                    else:
-                        print("Een spatie is niet toegestaan")
+                    match invoer:
+                        case "":
+                            print("Geef invoer.")
+                        case _:
+                            print("Een spatie is niet toegestaan")
                 else:
                     for f in invoer:
                         for c in verboden_karakters:
