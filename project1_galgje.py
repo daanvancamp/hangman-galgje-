@@ -1,4 +1,3 @@
-
 #Hier en daar zijn er nog tests of debugging lijnen te vinden die nu niets meer doen.
 #Er wordt vaak print("\n") gebruikt, dit om alineas te vormen.
 print("Vergeet zeker niet om uw geluid aan te zetten, op die manier kunt u de muziek horen.")
@@ -10,12 +9,15 @@ import nltk; from nltk.corpus import stopwords
 from time import sleep, time;from numpy import subtract;from random import randint
 from turtle import*
 import sys
+from music import *
+from utils import print_tekst
+from tekst import *
 #print("na import")
-antwoorden_nee = frozenset(["neen","Neen.","Nee.","Neen","nee","Nee"])
-antwoorden_ja = frozenset(["Ja","ja","Ja.","zeker","Zeker","Zeker."])
+antwoorden_nee = frozenset(["neen","neen.","nee.","nee"])
+antwoorden_ja = frozenset(["ja","ja.","zeker","zeker.","natuurlijk"])
 
-eerste_run=True
-print_woord=False #testen
+eerste_run = True
+print_woord = False #testen
 print("Wil je dat de woorden geprint worden?")
 invoer_print_woord = input("druk op enter voor nee of typ {ja} of {nee}    ")
 match invoer_print_woord.strip().lower():
@@ -82,15 +84,15 @@ verboden_karakters = ["^",'|', '<', '>',"&",",","#","_",";"]
 Thread(target=speel_muziek_opstarten,daemon=True).start()
 
 	
-klaar=False
+klaar = False
 
 def aftellen():
 	global root_opstarten, aftellen_label, tijd, tijdverschil,gemiddelde_tijd_opstarten
-	tijd_wachten=0.5
+	tijd_wachten = 0.5
 	while not klaar_s_w or not klaar_w:
 		try:
-			tijdverschil=subtract(time(),tijd)
-			tijd_tot_opgestart=round(subtract(gemiddelde_tijd_opstarten,tijdverschil))
+			tijdverschil = subtract(time(),tijd)
+			tijd_tot_opgestart = round(subtract(gemiddelde_tijd_opstarten,tijdverschil))
 			
 			if tijd_tot_opgestart<0:
 				aftellen_label.config(text="Het gaat niet helemaal zoals gepland, een onverwachte vertraging deed zich voor, het opstarten kan nog iets langer duren.")
@@ -138,15 +140,15 @@ def aftellen():
 
 def label_aanpassen():
 	global opstarten_label, klaar_s_w,klaar_w, aftellen_label, tijd, tijdverschil, vooruitgang_label
-	tijd_tussen_veranderen=0.4
+	tijd_tussen_veranderen = 0.4
 	Thread(target=aftellen,daemon=True).start()
-	getoond_klaar_s_w=False
-	getoond_klaar_w=False
+	getoond_klaar_s_w = False
+	getoond_klaar_w = False
 	sleep(1)
 	while not klaar_s_w or not klaar_w:
-		if klaar_s_w==True and getoond_klaar_s_w!=True:
+		if klaar_s_w and not getoond_klaar_s_w:
 			vooruitgang_label.config(text="Alle veelgebruikte Nederlandse woorden zijn geladen.")
-		if klaar_w==True and getoond_klaar_w!=True:
+		if klaar_w and not getoond_klaar_w:
 			vooruitgang_label.config(text="Alle Nederlandse woorden zijn geladen.(Ook de minder gebruikte woorden.)")
 		
 			
@@ -203,24 +205,16 @@ def even_geduld():
 	
 	root_opstarten.mainloop()
 		 
-	
 def kies_woord():
 	global woord, volledige_lijst_woorden, maxlengte, spatie_toegelaten, verboden_karakters, print_woord
-	woord=''
+	woord = ''
 	
-	while woord=="":
-		if klaar==True:
-			woord=volledige_lijst_woorden.pop().lower()
-			while len(woord)>maxlengte:
-				woord=volledige_lijst_woorden.pop().lower()
-				
-			for b in woord:
-				item=b
-				if item in verboden_karakters:
-					woord=volledige_lijst_woorden.pop().lower()
-			if spatie_toegelaten==False:
-				if b in spaties:
-					woord=volledige_lijst_woorden.pop().lower()
+	while not woord:
+		if klaar:
+			woord = volledige_lijst_woorden.pop().lower()
+			while len(woord)>maxlengte or any(c in verboden_karakters for c in woord): #controleer op lengte en op verboden karakters, verander van woord indien nodig
+				woord = volledige_lijst_woorden.pop().lower()
+			
 	if print_woord:
 		print(woord)
 	for i in range(4):
@@ -292,7 +286,6 @@ def importeer():
 	Thread(target=download_s_w, daemon=True).start()
 	Thread(target=download_w, daemon=True).start()
 	
-	tijd_voor_laden=time()
 	aantal_verloren=0
 
 	while  volledige_lijst_woorden=={}:
@@ -306,33 +299,20 @@ Thread(target=importeer, daemon=True).start()
 
 maxlengte=None
 while maxlengte is None:#De keer waarin de maximumlengte en de rest worden ingesteld is de laatste run van de loop.
-	if klaar==True:
-			from time import sleep
+	if klaar:
 			print("bijna klaar...")
 			print("\n")
-			tekst_maximumlengte="Waarschuwing: De langste woorden bevatten MEER DAN 30 karakters."
-			tekst2_maximumlengte="Herhaling: de langste woorden bevatten MEER DAN 30 karakters, dit zijn bijgevolg ook moeilijke woorden."
-			maxlengte_tuple=tekst_maximumlengte,tekst2_maximumlengte,"  "
+			
 			if eerste_print:
-				for i in maxlengte_tuple:
-					for c in i:
-						print(c,end="")
-						sleep(0.01)
-					print("\n")
-					sleep(0.15)
+				print_tekst(maxlengte_tuple,0.15,0.01)
 			else:
+				print_tekst(maxlengte_tuple,0.07,0.005)
 				
-				for i in maxlengte_tuple:
-					for c in i:
-						print(c,end="")
-						sleep(0.005)
-					print("\n")
-					sleep(0.07)
 			maxlengte = None
 			while maxlengte is None:#zolang niet gedefinieerd
 				print("Druk op enter om de limiet in te stellen op 50 karakters.")
 				maxlengte = input("Geef de maximum lengte van de woorden of woordgroepen die je wilt raden in.    ")
-				if maxlengte=="":
+				if not maxlengte:
 					maxlengte=50
 					print("Limiet ingesteld op 50.")
 					break
@@ -344,29 +324,17 @@ while maxlengte is None:#De keer waarin de maximumlengte en de rest worden inges
 					print("string of float ingegeven, geef een integer")
 			print("\n")#nieuwe lijn
 			
-			lijn1_term = "Het aantal kansen dat je krijgt bepaalt de moeilijkheidsgraad."
-			lijn2_term = "Kies uit alle veelvouden van 2: 2,4,6,8,..."
 			if eerste_print:
-				for f in lijn1_term,lijn2_term:
-					for d in f:
-						print(d,end="")
-						sleep(0.005)
-					print("\n")
-					sleep(0.1)
+				print_tekst(tuple_moeilijkheidsgraad,0.1,0.005)
 			else:
-				for f in lijn1_term,lijn2_term:
-					for d in f:
-						print(d,end="")
-						sleep(0.01)
-					print("\n")
-					sleep(0.3)
+				print_tekst(tuple_moeilijkheidsgraad,0.3,0.01)
 					
 			aantal_kansen = None
 			while aantal_kansen is None:#zolang niet ingesteld
 				try:
 					print("Als je op enter drukt(zonder iets in te geven) , blijft het 8 en heb je dus acht kansen, dat is de standaard.")
 					aantal_kansen = input("Geef de moeilijkheidsgraad in de vorm van het aantal kansen dat je wenst in.     ").strip()#mag hier nog niet crashen, anders werkt de if in except niet.
-					if str(aantal_kansen)=="":
+					if not aantal_kansen:
 						aantal_kansen=8
 						print("De standaard waarde werd ingesteld(8)")
 						break# sla de volgende lijn over.
@@ -380,7 +348,7 @@ while maxlengte is None:#De keer waarin de maximumlengte en de rest worden inges
 						continue
 				except:
 					aantal_kansen="1"
-					if aantal_kansen=="":
+					if not aantal_kansen:
 						aantal_kansen=8
 						print("De standaard waarde werd ingesteld(8)")
 						break# sla de volgende lijn over.
@@ -394,12 +362,12 @@ print("Woordgroepen komen zelden voor")
 print("druk op enter voor standaard: {geen woordgroepen}")
 sleep(0.3)
 while spatie_toegelaten=='niet toegelaten':#zolang de variabele nog niet gedefinieerd is.
-	if klaar==True:
-		antwoord=input("Mag het een woordgroep zijn?   ")
+	if klaar:
+		antwoord = input("Mag het een woordgroep zijn?   ").strip().lower()
 		
-		if antwoord.strip().lower() in antwoorden_ja:
+		if antwoord in antwoorden_ja:
 			spatie_toegelaten=True
-		elif antwoord.strip().lower() in antwoorden_nee or antwoord=="":
+		elif antwoord in antwoorden_nee or not antwoord:
 			spatie_toegelaten=False
 		else:
 			print("Wat bedoel je? Antwoord met ja of nee.")
@@ -411,24 +379,16 @@ print("\n")
 
 def maxlengte_wijzigen():
 	global maxlengte
-	from time import sleep
 	print("\n")
-	tekst_maximumlengte = "Waarschuwing: De langste woorden bevatten MEER DAN 30 karakters."
-	tekst2_maximumlengte = "Herhaling: de langste woorden bevatten MEER DAN 30 karakters, dit zijn bijgevolg ook moeilijke woorden."
    
-	for i in tekst_maximumlengte,tekst2_maximumlengte:#print geleidelijk aan
-		for c in i:
-			print(c,end="")
-			sleep(0.005)
-		print("\n")
-		sleep(0.02)
+	print_tekst(maxlengte_tuple,0.02,0.005)
 	
-	maxlengte=None
+	maxlengte = None
 	while maxlengte is None:#zolang niet gedefinieerd
 		print("Druk op enter om de limiet in te stellen op 50 karakters.")
 		maxlengte=input("Geef de maximum lengte van de woorden of woordgroepen die je wilt raden in.    ")
-		if maxlengte=="":
-			maxlengte=50
+		if not maxlengte:
+			maxlengte = 50
 			print("Limiet ingesteld op 50.")
 			break
 		elif maxlengte==0:
@@ -447,14 +407,14 @@ def herstart():
 	from time import sleep
 
 	#turtle blijft op dezelfde plaats, voor het tekenen gaat hij steeds naar het midden (-100,0)
-	if eerste_start==True:
+	if eerste_start:
 		pensize(3)
 		pencolor("green")
 		eerste_start = False
 	else:
 		clear()#verwijder de tekening van de galg. turtle.reset is het in feite, aleen wordt de plaats en ori�ntatie niet veranderd
 		
-		if gewonnen==False:
+		if not gewonnen:
 			print("Dit was het woord dat je moest raden:",woord)
 			
 		for i in range(5):
@@ -481,57 +441,26 @@ def herstart():
 	lijst = []
 	lijst_al_getekend = []
 	
-	lijn1 = "eindig programma door stop op eender welk moment te typen."
-	lijn2 = "herstart door herstart te typen, dan krijg je het woord dat je moest raden ook te zien."
-	extra_tussen_lijn1_lijn2 = "verander de maximumlengte van de woorden die je wilt raden door {maxlengte} te typen"
-	lijn3 = "Je mag hoofdletters gebruiken, maar die hebben geen effect."
-	lijn4 = "Wanneer je een gok wilt doen naar het woord, dan begin je met : en schrijf je daarachter het woord dat je denkt dat het is."
-	lijn5 = "Bijvoorbeeld: Als je schoen wilt raden, dan typ je {:schoen}."
-	lijn6 = "De plaatsen van alle overeenkomende karakters worden geprint."
-	lijn7 = "Iedere underscore betekent een karakter of spatie die nog niet geraden is."
-	lijn8 = "De woorden zijn zowel afkomstig uit het alledaagse leven als uit het ICT domein."
-	lijn9 = "Andere specifieke domeinen komen niet aan bod."
-	lijn10 = "De woorden kunnen zowel makkelijk als moeilijk zijn."
-	lijn11 = "Alle woorden die trema's of accenten bevatten zijn inbegrepen."
-	lijn12 = "Houd er rekening mee dat die geraden moeten worden zonder de accenten."
-	lijn13 = "Opmerking: Hoe snel de tekst wordt geprint is omgekeerd evenredig met hoe aandachtig je de tekst zou moeten lezen. "
-	lijn14 = "Dit werd echter enkel in de mate van het mogelijke gerealiseerd."
-	lijn15 = "m.a.w. De tekst die aandachtig gelezen moet worden verschijnd trager dan de tekst waar er diagonaal door gelezen mag worden."
-	lijn16 = "Zowel bij winst als bij verlies wordt er een liedje afgespeeld."
-	lijn17 = "Sommige woorden zijn overigens afkomstig uit Nederland of worden hoofdzakelijk gebruikt in Nederland."
-	lijn18 = "De woorden kunnen vervoegingen van werkwoorden bevatten."
-	algemene_info_verzameling = lijn1,extra_tussen_lijn1_lijn2,lijn2,"  ",lijn3,lijn4,lijn5,"  ",lijn6,lijn7,"  ", lijn8,lijn9, lijn10, lijn11, lijn12,"  ", lijn13, lijn14,lijn15, lijn16,"  ", lijn17, lijn18
 	if eerste_print:
-		from time import sleep #Normaal wordt er aan het begin geimporteerd, maar dit spaart tijd.
-		for i in algemene_info_verzameling:
-			for b in i:
-				print(b,end="")
-				sleep(0.025)
-			sleep(0.15)
-			print("\n")
-		eerste_print=False
+		print_tekst(algemene_info_verzameling,0.15,0.025)
+		eerste_print = False
 	else:#print sneller als de instructies al gelezen konden worden bij de start van het programma.
-		for i in algemene_info_verzameling:
-			for b in i:
-				print(b,end="")
-				sleep(0.001)
-			sleep(0.01)
-			print("\n")
+		print_tekst(algemene_info_verzameling,0.01,0.001)
 
-	print("\n\n")#laat lijn open
-	print(":", end="")
+	print("\n\n:", end="")#laat lijn open
 	for i in range(len(woord)):
 		print("_",end="")
 	print("\n")
+
 def bepaal_gemeenschappelijk():
 	global huidig_deel,gemeenschappelijke_karakters, woord, gem_lijst, geraden_deel, gewonnen, lijst
-	gem_lijst=[]
-	gemeenschappelijke_karakters=0
+	gem_lijst = []
+	gemeenschappelijke_karakters = 0
 	geraden_deel = ':'
 	for c in huidig_deel:
 		for b in woord:
 			if c==b and c not in gem_lijst:
-				aantal=woord.count(c)#hoeveel keer komt de waarde van c voor in woord
+				aantal = woord.count(c)#hoeveel keer komt de waarde van c voor in woord
 				gem_lijst.append(c)
 				gemeenschappelijke_karakters+=aantal
 				
@@ -547,23 +476,15 @@ def bepaal_gemeenschappelijk():
 		
 	for h in woord:# bereken de tekst om te tonen, inclusief underscores
 		if h in gem_lijst:
-		
 			geraden_deel += h
 		else:
-			geraden_deel += "_" 
-				
+			geraden_deel += "_"
+	print(geraden_deel)
 	if  gemeenschappelijke_karakters==len(woord):
 		gewonnen=True
-	for i in range(2):
-		print("\n")
-	
-def stel_penkleur_in(penkleur:str):
-	global win
-	pencolor(penkleur)
-	
-def verander_penkleur(penkleur):
-	global stadium
-	stel_penkleur_in(penkleur)
+
+	for i in range(2): print("\n")
+
 def pauzeer_normale_muziek(duurtijd:int):
 	
 	global sound,sound2, sound3, sound4, sound5, bezig_andere_muziek
@@ -591,7 +512,6 @@ def speel_muziek_gewonnen():
 	from playsound import playsound
 	pad = r".\muziek voor galgje\gewonnen_muziek.mp3"
 	pad2 = r".\muziek voor galgje\gewonnen_muziek2.mp3"
-	# geeft geen error als het nog niet bezig is.  
 
 	match randint(1,2):
 		case 1:
@@ -609,13 +529,13 @@ def root_verloren_verberg():
 	try:
 		root_verloren.withdraw()
 		print("na withdraw")
-		bestaat=True
+		bestaat = True
 	except:
 		print("excepted in root_verloren")
-		bestaat=False
+		bestaat = False
 
 verloren = True  # Globale variabele om de staat van het venster bij te houden
-from tkinter import Label, Tk, PhotoImage
+from tkinter import Label, Tk
 
 def toon_scherm_verloren():
 	global verloren, root_verloren, bestaat
@@ -669,9 +589,15 @@ def verhoog_snelheid_bij_herhaling(lijst_al_getekend:list,stadium:float,aantal_k
 		speed(2)#traagst
 		lijst_al_getekend.append(stadium_te_tekenen)#hierna is het wel getekend.
 	
+def stel_penkleur_in(penkleur:str):
+	global win
+	pencolor(penkleur)
+	
+def verander_penkleur(penkleur):
+	stel_penkleur_in(penkleur)
 
 def teken():
-	global stadium, einde, gewonnen, verder, aantal_verloren, verloren, aantal_resterende_pogingen,aantal_kansen, lijst_al_getekend
+	global stadium, einde, gewonnen, verder, aantal_verloren, verloren, aantal_resterende_pogingen, aantal_kansen, lijst_al_getekend
 	#haakjes zijn vaak optioneel, maar staan er voor de duidelijkheid
 	#Door de bewerkingen niet te vereenvoudigen blijft het ook duidelijker. (meerdere keer hetzelfde in plaats van schijnbaar verschillende bewerkingen)
 	penup()
@@ -686,11 +612,11 @@ def teken():
 	setheading(0)#wijs naar rechts
 	pendown()
 	fillcolor("grey")
+
 	if stadium*(aantal_kansen/8)>=aantal_kansen/8:
-		stadium_te_tekenen=1
+		stadium_te_tekenen = 1
 		verhoog_snelheid_bij_herhaling(lijst_al_getekend,stadium,aantal_kansen,stadium_te_tekenen)
-		penkleur="green"
-		verander_penkleur(penkleur)
+		verander_penkleur("green")
 		#voet
 		forward(60)
 		backward(100)
@@ -710,10 +636,10 @@ def teken():
 		forward(40)
 		right(90)
 		forward(15)
+
 	if stadium*(aantal_kansen/8)>=aantal_kansen/4:
 		stadium_te_tekenen=2
 		verhoog_snelheid_bij_herhaling(lijst_al_getekend,stadium,aantal_kansen,stadium_te_tekenen)
-		penkleur="green"
 		straal_cirkel=13
 		verander_penkleur("green")
 		penup()
@@ -722,10 +648,10 @@ def teken():
 		begin_fill()
 		circle(straal_cirkel)
 		end_fill()
+
 	if stadium*(aantal_kansen/8)>=(aantal_kansen/8)*3:
-		stadium_te_tekenen=3
+		stadium_te_tekenen = 3
 		verhoog_snelheid_bij_herhaling(lijst_al_getekend,stadium,aantal_kansen,stadium_te_tekenen)
-		penkleur="green"
 		verander_penkleur("green")
 		penup()
 		circle(straal_cirkel,90)#een vierde van een cirkel om op de juiste plek te eindigen.
@@ -735,22 +661,21 @@ def teken():
 		setheading(90)#draai naar boven
 		forward(20)
 		setheading(270)
+
 	if stadium*(aantal_kansen/8)>=(aantal_kansen/8)*4:
-		stadium_te_tekenen=4
+		stadium_te_tekenen = 4
 		verhoog_snelheid_bij_herhaling(lijst_al_getekend,stadium,aantal_kansen,stadium_te_tekenen)
-		penkleur="yellow"
 		verander_penkleur("yellow")
-		binnenhoek_armen=70
-		lengte_armen=22
+		binnenhoek_armen = 70
+		lengte_armen = 22
 		left(180-binnenhoek_armen)
 		forward(lengte_armen)
 		left(180)
 		forward(lengte_armen)     
 		
 	if stadium*(aantal_kansen/8)>=(aantal_kansen/8)*5:
-		stadium_te_tekenen=5
+		stadium_te_tekenen = 5
 		verhoog_snelheid_bij_herhaling(lijst_al_getekend,stadium,aantal_kansen,stadium_te_tekenen)
-		penkleur="yellow"
 		verander_penkleur("yellow")
 		setheading(binnenhoek_armen+90)#draai
 		forward(lengte_armen)
@@ -759,13 +684,12 @@ def teken():
 		setheading(270)#draai naar beneden
 		
 	if stadium*(aantal_kansen/8)>=(aantal_kansen/8)*6:
-		stadium_te_tekenen=6
+		stadium_te_tekenen = 6
 		verhoog_snelheid_bij_herhaling(lijst_al_getekend,stadium,aantal_kansen,stadium_te_tekenen)
-		penkleur="orange"
 		verander_penkleur("orange")
-		binnenhoek_benen=30
+		binnenhoek_benen = 30
 		forward(20)#afstand tussen armen en benen
-		lengte_benen=20
+		lengte_benen = 20
 		left(binnenhoek_benen)
 		forward(lengte_benen)
 		left(180)
@@ -773,9 +697,8 @@ def teken():
 		setheading(270)
 		
 	if stadium*(aantal_kansen/8)>=(aantal_kansen/8)*7:
-		stadium_te_tekenen=7
+		stadium_te_tekenen = 7
 		verhoog_snelheid_bij_herhaling(lijst_al_getekend,stadium,aantal_kansen,stadium_te_tekenen)
-		penkleur="red"
 		verander_penkleur("red")
 		right(binnenhoek_benen)
 		forward(lengte_benen)
@@ -784,7 +707,6 @@ def teken():
 		setheading(270)
 		
 	if stadium*(aantal_kansen/8)>=aantal_kansen:
-		penkleur="red"
 		verander_penkleur("red")
 		penup()
 		pensize(5)
@@ -805,57 +727,56 @@ def teken():
 		sleep(3)
 		aantal_verloren+=1
 		thread_verloren=Thread(target=toon_scherm_verloren,daemon=True)
-		einde=True
-		verder=False
-		gewonnen=False # voeg toe op einde!!!
+		einde = True
+		verder = False
+		gewonnen = False
 		verloren=True
 		try:
 			thread_verloren.start()
 			sleep(8)
 			thread_verloren.stop()
-			#print("thread gestart")
 			thread_verloren.join()
 		except:
 			print("Je hebt verloren, je hebt al",aantal_verloren,"keer verloren")
 		finally:
-			aantal_verloren+=1
+			aantal_verloren += 1
 	
 def opnieuw_spelen():
 	global gewonnen, ja_nee, antwoorden_ja,antwoorden_nee
 	
-	if gewonnen==True:
+	if gewonnen:
 		print("Op naar de volgende prijs!")
 		Thread(target=speel_muziek_gewonnen,daemon=True).start()
 		gewonnen = False
-	elif gewonnen==False and einde!=True:
+	elif gewonnen and not einde:
 		print("Niet getreurd, je zal nog kansen krijgen.")
 	
-	ja_nee = ""
+	ja_nee = None
 	if True:
-		while ja_nee=="" or ja_nee==None:
-			#print("in loop")
+		while not ja_nee:
 			sleep(2)
 			print("Druk op enter voor ja of geef {ja} of {nee} in.")
-			ja_nee = input("Wil je opnieuw spelen?    ")
+			ja_nee = input("Wil je opnieuw spelen?    ").strip().lower()
 			
-			if ja_nee.strip().lower() in antwoorden_ja or ja_nee=="":
+			if ja_nee in antwoorden_ja or not ja_nee:
 				hoofdprogramma()
-			elif ja_nee.strip().lower() in antwoorden_nee:
+
+			elif ja_nee in antwoorden_nee:
 				print("Ik sta steeds paraat als je nog eens wilt spelen!")
 				print("Tot een volgende keer!")
 				break#voor de duidelijkheid
 			else:
 				print("?")
-				ja_nee=""
+				ja_nee = None
 	
 def opnieuw_spelen_aangepast():
 	global gewonnen, ja_nee, antwoorden_ja,antwoorden_nee
 	
-	if gewonnen==True:
+	if gewonnen:
 		print("Op naar de volgende prijs!")
 		Thread(target=speel_muziek_gewonnen,daemon=True).start()
 		gewonnen=False
-	elif gewonnen==False and einde!=True:
+	elif not gewonnen and not einde:
 		print("Niet getreurd, je zal nog kansen krijgen.")
 	hoofdprogramma()
 
@@ -866,13 +787,13 @@ def lees_karakter():
 	
 	verder = False
 	invoer = ""
-	while len(str(invoer))!=1 or verder==True:
+	while len(str(invoer))!=1 or verder:
 		invoer = input("geef een karakter in dat je wilt uitproberen   ").strip()
 
 		if not invoer.startswith(":"):
 			match invoer.strip().lower():
 				case "stop":
-					einde=True
+					einde = True
 				 
 					from inputimeout import inputimeout, TimeoutOccurred
 					print("  ")
@@ -893,11 +814,11 @@ def lees_karakter():
 					lees_karakter()
 				
 			try:
-				invoer=float(invoer)
-				invoer=int(invoer)
+				invoer = float(invoer)
+				invoer = int(invoer)
 				print("type float,int")
 				lees_karakter()
-				verder=True
+				verder = True
 			except:
 			
 				if len(invoer.strip())>1:
@@ -906,15 +827,15 @@ def lees_karakter():
 					else:
 						print("De ingevoerde string is te lang, die is namelijk",len(invoer),"karakters lang")
 					
-					tekst_te_lang="Ben je zeker dat je niet {:"+invoer+"} bedoeld?"
-					tekst2_te_lang="Mischien wil je een woord raden."
+					tekst_te_lang = "Ben je zeker dat je niet {:"+invoer+"} bedoeld?"
+					tekst2_te_lang = "Mischien wil je een woord raden."
 					for y in tekst_te_lang,tekst2_te_lang:
 						for x in y:
 							print(x,end="")
 							sleep(0.01)
 						sleep(0.15)
 						print("\n")#ga naar volgende lijn
-				elif invoer in spaties and spatie_toegelaten==False:
+				elif invoer in spaties and not spatie_toegelaten:
 					match invoer:
 						case "":
 							print("Geef invoer.")
@@ -969,10 +890,10 @@ def print_aantal_resterende_pogingen():
 def hoofdprogramma():
 	global einde, huidig_deel, stadium, gewonnen, gemeenschappelijke_karakters, woord, invoer, stadium, term_stadium_vermeerderen, aantal_kansen, antwoorden_ja,antwoorden_nee
 	herstart()# wordt een keer uitgevoerd
-	while gemeenschappelijke_karakters<len(woord) and gewonnen!=True and einde!=True:
+	while gemeenschappelijke_karakters<len(woord) and not gewonnen and not einde:
 		lees_karakter()
 	
-		if einde==True:
+		if einde:
 			break
 		try:
 			for i in invoer:
@@ -998,7 +919,7 @@ def hoofdprogramma():
 	
 		bepaal_gemeenschappelijk()
 	else:
-		if gewonnen==True or gemeenschappelijke_karakters==len(woord):
+		if gewonnen or gemeenschappelijke_karakters==len(woord):
 			print("Je hebt gewonnen!!")
 			print("Je hebt het volgende woord geraden:",woord)
 			gewonnen=True# initialisatie voor volgende poging
