@@ -4,17 +4,24 @@ print("Vergeet zeker niet om uw geluid aan te zetten, op die manier kunt u de mu
 print("Die start binnen enkele seconden.")
 #print("voor import")
 import asyncio as a;from threading import Thread
-from tkinter import Tk
+from tkinter import Tk,Label
 import nltk; from nltk.corpus import stopwords
 from time import sleep, time;from numpy import subtract;from random import randint
 from turtle import*
+from playsound import playsound
 import sys
+import nltk
+from nltk.corpus import stopwords
+import pygame
+pygame.mixer.init()
+
 from invoer import StringInput
 from music import *
 from utils import print_tekst
-from tekst import *
+from instructies import *
 from invoer import *
-#print("na import")
+from tekenen import *
+
 antwoorden_nee = frozenset(["neen","neen.","nee.","nee"])
 antwoorden_ja = frozenset(["ja","ja.","zeker","zeker.","natuurlijk"])
 
@@ -23,9 +30,6 @@ print_woord = False #testen
 print("Wil je dat de woorden geprint worden?")
 invoer_print_woord = input("druk op enter voor nee of typ {ja} of {nee}    ")
 match invoer_print_woord.strip().lower():
-	case "nee":
-		print_woord = False
-		print("De woorden zullen niet geprint worden.")
 	case "ja":
 		print_woord = True
 		print("De woorden zullen geprint worden.")
@@ -45,42 +49,23 @@ spatie = ''
 bestaat = False
 bezig_andere_muziek = False
 gemiddelde_tijd_opstarten = 3
+sounds = [sound,sound2,sound3,sound4,sound5]
+length_sounds = [68,100,84,62,154]
+verboden_karakters = ["^",'|', '<', '>',"&",",","#","_",";"]
 
-from threading import Thread
-import nltk
-from nltk.corpus import stopwords
-import pygame
-pygame.mixer.init()
-
-def speel_muziek_opstarten():
-	global geluid_opstarten
-	pad_muziek_opstarten = r".\muziek voor galgje\opstarten_muziek.mp3"
-	geluid_opstarten = pygame.mixer.Sound(pad_muziek_opstarten)
-	geluid_opstarten.play(-1,fade_ms=2000)#fade in=2s
-
-def laden_stopwoorden():
-	global nederlandse_stopwoorden, klaar_s_w
-	nederlandse_stopwoorden = frozenset(stopwords.words('dutch'))     
-	klaar_s_w = True
-
-def laden_woorden():
+def download_w():
 	global nederlandse_woorden, klaar_w
 	from list_words import nederlandse_woorden
 	klaar_w = True
 
-def download_w():
-	Thread(target=laden_woorden, daemon=True).start()
-
 def download_s_w():
+	global nederlandse_stopwoorden, klaar_s_w
 	nltk.download('stopwords',quiet=True)
-	Thread(target=laden_stopwoorden, daemon=True).start()
+	nederlandse_stopwoorden = frozenset(stopwords.words('dutch'))     
+	klaar_s_w = True
 
-verboden_karakters = ["^",'|', '<', '>',"&",",","#","_",";"]
+Thread(target = speel_muziek_opstarten,daemon=True).start()
 
-
-Thread(target=speel_muziek_opstarten,daemon=True).start()
-
-	
 klaar = False
 
 def aftellen():
@@ -146,13 +131,12 @@ def label_aanpassen():
 		except:
 			pass
 		
-def even_geduld():
+def initialiseer_gui_opstarten():
 	global win,vooruitgang_label, opstarten_label, root_opstarten, lettertype, klaar_s_w, klaar_w, tijd, aftellen_label, root_opstarten
 	tijd = time()
 	lettertype=("new times roman",20)
 	
 	print("even geduld alstublieft...")
-	from tkinter import Label, Tk
 	print("Het programma is aan het opstarten...")
 	print("Je woorden worden bijeen geraapt...")
 	root_opstarten = Tk()
@@ -166,7 +150,7 @@ def even_geduld():
 	vooruitgang_label = Label(root_opstarten,text="vooruitgang: de Nederlandse woorden zijn aan het laden", font=("new times roman",13),fg="white",bg="dark blue",wraplength=300)
 	vooruitgang_label.place(relx=0.7,rely=0.8)
 	
-	Thread(target= label_aanpassen, daemon=True).start()
+	Thread(target = label_aanpassen, daemon=True).start()
 	
 	root_opstarten.mainloop()
 		 
@@ -196,35 +180,16 @@ def start_speel_muziek_normaal():
 	
 async def speel_muziek_normaal():
 	global sound, sound2,sound3,sound4,sound5
-	
 	while True:
 		if not bezig_andere_muziek:
 			try:
-				match randint(1,5):
-					case 1:
-						sound.play(1,fade_ms=2000)#1 wilt zeggen 1 keer afspelen
-						await a.sleep(68) 
-						sound.stop()
-	   
-					case 2:
-						sound2.play(1,fade_ms=2000)
-						await a.sleep(100)
-						sound2.stop()
-					
-					case 3:
-						sound3.play(1,fade_ms=2000)
-						await a.sleep(84)
-						sound3.stop()    
-			
-					case 4:
-						sound4.play(1,fade_ms=2000)
-						await a.sleep(62)
-						sound4.stop()
-					
-					case 5:
-						sound5.play(1,fade_ms=2000)
-						await a.sleep(154)
-						sound5.stop()
+				random_index = randint(0,4)
+				sound_to_play = sounds[random_index]
+				duration_of_sound = length_sounds[random_index]
+				
+				sound_to_play.play(1,fade_ms=2000)#1 wilt zeggen 1 keer afspelen
+				await a.sleep(duration_of_sound)
+				sound.stop()
 					
 				if not bezig_andere_muziek:
 					continue
@@ -242,13 +207,13 @@ async def speel_muziek_normaal():
 			
 def importeer():
 	global volledige_lijst_woorden, klaar, klaar_s_w, klaar_w, nederlandse_woorden, aantal_verloren,nederlandse_stopwoorden
-	Thread(target=even_geduld, daemon=True).start()
-	Thread(target=download_s_w, daemon=True).start()
-	Thread(target=download_w, daemon=True).start()
+	Thread(target = initialiseer_gui_opstarten, daemon=True).start()
+	Thread(target = download_s_w, daemon=True).start()
+	Thread(target = download_w, daemon=True).start()
 	
 	aantal_verloren=0
 
-	while  not volledige_lijst_woorden:
+	while not volledige_lijst_woorden:
 		if klaar_s_w and klaar_w:
 			
 			volledige_lijst_woorden = set(nederlandse_stopwoorden|nederlandse_woorden)
@@ -364,8 +329,6 @@ def maxlengte_wijzigen():
 def herstart():
 	global geluid_opstarten,eerste_run,woord,huidig_deel, stadium, invoer,einde, gemeenschappelijke_karakters, gem_lijst, lijst, geraden_deel, lijst, eerste_start, verder, gewonnen, eerste_print, lijst_al_getekend
 	
-	from time import sleep
-
 	#turtle blijft op dezelfde plaats, voor het tekenen gaat hij steeds naar het midden (-100,0)
 	if eerste_start:
 		pensize(3)
@@ -457,7 +420,7 @@ def pauzeer_normale_muziek(duurtijd:int):
 	
 def speel_muziek_verloren():
 	global sound, sound2,sound3,sound4,sound5
-	from playsound import playsound
+
 	pad = r".\muziek voor galgje\verloren_muziek.mp3"
 	duurtijd = 60+43
 	Thread(target=pauzeer_normale_muziek,args=(duurtijd,)).start()
@@ -465,20 +428,17 @@ def speel_muziek_verloren():
 	
 def speel_muziek_gewonnen():
 	global sound, sound2, sound3, sound4,sound5
-	from playsound import playsound
+
 	pad = r".\muziek voor galgje\gewonnen_muziek.mp3"
 	pad2 = r".\muziek voor galgje\gewonnen_muziek2.mp3"
+	bestandspaden = [pad,pad2]
+	duurtijden = [60+47,60+26]
 
-	match randint(1,2):
-		case 1:
-			duurtijd = 60+47
-			Thread(target=pauzeer_normale_muziek,args=(duurtijd,)).start()
-			playsound(pad,)
-		
-		case 2:
-			duurtijd = 60+26
-			Thread(target=pauzeer_normale_muziek,args=(duurtijd,)).start()
-			playsound(pad2,)
+	idx = randint(0,1)
+	willekeurig_pad = bestandspaden[idx]
+	duurtijd = duurtijden[idx]
+	Thread(target=pauzeer_normale_muziek,args=(duurtijd,)).start()
+	playsound(willekeurig_pad,)
 		
 def root_verloren_verberg():
 	global root_verloren, bestaat
@@ -491,7 +451,6 @@ def root_verloren_verberg():
 		bestaat = False
 
 verloren = True  # Globale variabele om de staat van het venster bij te houden
-from tkinter import Label, Tk
 
 def toon_scherm_verloren():
 	global verloren, root_verloren, bestaat
@@ -556,137 +515,61 @@ def teken():
 	global stadium, einde, gewonnen, verder, aantal_verloren, verloren, aantal_resterende_pogingen, aantal_kansen, lijst_al_getekend
 	#haakjes zijn vaak optioneel, maar staan er voor de duidelijkheid
 	#Door de bewerkingen niet te vereenvoudigen blijft het ook duidelijker. (meerdere keer hetzelfde in plaats van schijnbaar verschillende bewerkingen)
-	penup()
-	speed(0)
-	goto(-110,50)
-	setheading(90)
-	shape("turtle")
-	stamp()
-	shape("classic")
-	
-	goto(-100,0)
-	setheading(0)#wijs naar rechts
-	pendown()
-	fillcolor("grey")
+	initialiseer_turtle()
 
 	if stadium*(aantal_kansen/8)>=aantal_kansen/8:
 		stadium_te_tekenen = 1
 		verhoog_snelheid_bij_herhaling(lijst_al_getekend,stadium,aantal_kansen,stadium_te_tekenen)
 		verander_penkleur("green")
-		#voet
-		forward(60)
-		backward(100)
-		forward(40)
-		#paal
-		left(90)
-		forward(85)
-		right(45)
-		forward(pow((pow(15,2)+pow(15,2)),0.5))#stelling van pythagoras macht 0,5 is een vierkantswortel; hypothenusa
-		left(90+45)
-		forward(15)#rechthoekszijde
-		left(90)
-		forward(15)#rechthoekszijde
-		right(180)
-		forward(15)
-		right(90)
-		forward(40)
-		right(90)
-		forward(15)
+		teken_voet_en_paal()
 
 	if stadium*(aantal_kansen/8)>=aantal_kansen/4:
-		stadium_te_tekenen=2
+		stadium_te_tekenen = 2
 		verhoog_snelheid_bij_herhaling(lijst_al_getekend,stadium,aantal_kansen,stadium_te_tekenen)
-		straal_cirkel=13
 		verander_penkleur("green")
-		penup()
-		goto(-100+40-straal_cirkel,100-15-straal_cirkel)
-		pendown()
-		begin_fill()
-		circle(straal_cirkel)
-		end_fill()
+		teken_hoofd()
 
 	if stadium*(aantal_kansen/8)>=(aantal_kansen/8)*3:
 		stadium_te_tekenen = 3
 		verhoog_snelheid_bij_herhaling(lijst_al_getekend,stadium,aantal_kansen,stadium_te_tekenen)
-		verander_penkleur("green")
-		penup()
-		circle(straal_cirkel,90)#een vierde van een cirkel om op de juiste plek te eindigen.
-		setheading(270)#draai naar beneden.
-		pendown()
-		forward(30)
-		setheading(90)#draai naar boven
-		forward(20)
-		setheading(270)
+		verander_penkleur("green")		
+		teken_lichaam()
 
 	if stadium*(aantal_kansen/8)>=(aantal_kansen/8)*4:
 		stadium_te_tekenen = 4
 		verhoog_snelheid_bij_herhaling(lijst_al_getekend,stadium,aantal_kansen,stadium_te_tekenen)
 		verander_penkleur("yellow")
-		binnenhoek_armen = 70
-		lengte_armen = 22
-		left(180-binnenhoek_armen)
-		forward(lengte_armen)
-		left(180)
-		forward(lengte_armen)     
+		teken_eerste_arm()
 		
 	if stadium*(aantal_kansen/8)>=(aantal_kansen/8)*5:
 		stadium_te_tekenen = 5
 		verhoog_snelheid_bij_herhaling(lijst_al_getekend,stadium,aantal_kansen,stadium_te_tekenen)
 		verander_penkleur("yellow")
-		setheading(binnenhoek_armen+90)#draai
-		forward(lengte_armen)
-		left(180)
-		forward(lengte_armen)
-		setheading(270)#draai naar beneden
-		
+		teken_tweede_arm()
+
 	if stadium*(aantal_kansen/8)>=(aantal_kansen/8)*6:
 		stadium_te_tekenen = 6
 		verhoog_snelheid_bij_herhaling(lijst_al_getekend,stadium,aantal_kansen,stadium_te_tekenen)
 		verander_penkleur("orange")
-		binnenhoek_benen = 30
-		forward(20)#afstand tussen armen en benen
-		lengte_benen = 20
-		left(binnenhoek_benen)
-		forward(lengte_benen)
-		left(180)
-		forward(lengte_benen)
-		setheading(270)
+		teken_been_bovenlichaam()
 		
 	if stadium*(aantal_kansen/8)>=(aantal_kansen/8)*7:
 		stadium_te_tekenen = 7
 		verhoog_snelheid_bij_herhaling(lijst_al_getekend,stadium,aantal_kansen,stadium_te_tekenen)
 		verander_penkleur("red")
-		right(binnenhoek_benen)
-		forward(lengte_benen)
-		left(180)
-		forward(lengte_benen)
-		setheading(270)
+		teken_tweede_been()
 		
 	if stadium*(aantal_kansen/8)>=aantal_kansen:
 		verander_penkleur("red")
-		penup()
-		pensize(5)
-		speed(0)
-		goto(-20,-25)
-		setheading(135)
-		pendown()
-		speed(3)
-		forward(pow(pow(150,2)+pow(150,2),0.5))#stelling van pythagoras
-		penup()
-		setheading(270)
-		forward(150)
-		left(135)
-		pendown()
-		forward(pow(pow(150,2)+pow(150,2),0.5))#stelling van pythagoras
-		penup()
+		teken_rood_kruis()
 
 		sleep(3)
 		aantal_verloren+=1
-		thread_verloren=Thread(target=toon_scherm_verloren,daemon=True)
 		einde = True
 		verder = False
 		gewonnen = False
-		verloren=True
+		verloren = True
+		thread_verloren = Thread(target=toon_scherm_verloren,daemon=True)
 		try:
 			thread_verloren.start()
 			sleep(8)
